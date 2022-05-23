@@ -1,0 +1,15 @@
+{
+  nats
+  debug
+}
+
+localhost
+
+route /foo {
+  nats_publish foo.bar
+  respond "All good!"
+}
+
+route /hello {
+  nats_request hello
+}
