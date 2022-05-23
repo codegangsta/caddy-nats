@@ -1,6 +1,8 @@
 # Caddy-NATS
 
 > :warning: **Still a WIP**
+
+## Example Caddyfile directives
 ```sh
 # connect to nats default server
 nats
