@@ -1,5 +1,6 @@
 # Caddy-NATS
 
+> :warning: **Still a WIP**
 ```sh
 # connect to nats default server
 nats
