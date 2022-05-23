@@ -13,7 +13,7 @@ func init() {
 	httpcaddyfile.RegisterHandlerDirective("nats_request", parseRequestHandler)
 }
 
-func parseApp(d *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
+func parseApp(_ *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
 	app := new(App)
 
 	//TODO do parsing work here
