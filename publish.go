@@ -69,7 +69,7 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 	}
 
 	if p.WithReply {
-		return p.natsRequestResponse(data, w)
+		return p.natsRequestReply(data, w)
 	}
 
 	// Otherwise. just publish like normal
@@ -81,7 +81,7 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 	return next.ServeHTTP(w, r)
 }
 
-func (p Publish) natsRequestResponse(reqBody []byte, w http.ResponseWriter) error {
+func (p Publish) natsRequestReply(reqBody []byte, w http.ResponseWriter) error {
 	//TODO: Configurable timeout
 	m, err := p.app.conn.Request(p.Subject, reqBody, time.Second*10)
 	if err != nil {
