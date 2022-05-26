@@ -45,7 +45,7 @@ func (app *App) Start() error {
 	app.logger.Info("Connecting via NATS context", zap.String("context", app.Context))
 	conn, err := natscontext.Connect(app.Context)
 	if err != nil {
-		app.logger.Error(err.Error())
+		return err
 	}
 
 	app.logger.Info("Connected to NATS server", zap.String("url", conn.ConnectedUrlRedacted()))
@@ -63,8 +63,12 @@ func (app *App) Stop() error {
 
 func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	for d.Next() {
-		// TODO add better error handling here
-		d.Args(&a.Context)
+		if d.NextArg() {
+			a.Context = d.Val()
+		}
+		if d.NextArg() {
+			return d.ArgErr()
+		}
 	}
 
 	return nil
