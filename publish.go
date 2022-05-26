@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
@@ -13,6 +14,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const publishDefaultTimeout = 10000
+
 func init() {
 	caddy.RegisterModule(Publish{})
 }
@@ -21,6 +24,7 @@ type Publish struct {
 	Subject   string `json:"subject,omitempty"`
 	WithReply bool   `json:"with_reply,omitempty"`
 	Prefix    string `json:"prefix,omitempty"`
+	Timeout   int64  `json:"timeout,omitempty"`
 
 	logger *zap.Logger
 	app    *App
@@ -60,7 +64,7 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 		return err
 	}
 
-	p.logger.Debug("Publishing NATS message", zap.String("subject", subj), zap.Bool("with_reply", p.WithReply))
+	p.logger.Debug("Publishing NATS message", zap.String("subject", subj), zap.Bool("with_reply", p.WithReply), zap.Int64("timeout", p.Timeout))
 
 	if p.WithReply {
 		return p.natsRequestReply(subj, data, w)
@@ -92,6 +96,16 @@ func (p *Publish) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				}
 
 				p.Prefix = d.Val()
+			case "timeout":
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+				t, err := strconv.Atoi(d.Val())
+				if err != nil {
+					return d.Err("timeout is not a valid integer")
+				}
+
+				p.Timeout = int64(t)
 			default:
 				return d.Errf("unrecognized subdirective: %s", d.Val())
 			}
@@ -103,11 +117,12 @@ func (p *Publish) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 func (p Publish) natsRequestReply(subject string, reqBody []byte, w http.ResponseWriter) error {
 	//TODO: Configurable timeout
-	m, err := p.app.conn.Request(subject, reqBody, time.Second*10)
+	m, err := p.app.conn.Request(subject, reqBody, time.Duration(p.Timeout)*time.Millisecond)
 	if err != nil {
 		return err
 	}
 
+	// TODO: Make error handlers configurable
 	if err == nats.ErrNoResponders {
 		w.WriteHeader(http.StatusNotFound)
 		return err

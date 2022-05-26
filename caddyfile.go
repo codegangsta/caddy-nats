@@ -25,13 +25,19 @@ func parseApp(d *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
 }
 
 func parsePublishHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
-	var p Publish
+	var p = Publish{
+		WithReply: false,
+		Timeout:   publishDefaultTimeout,
+	}
 	err := p.UnmarshalCaddyfile(h.Dispenser)
 	return p, err
 }
 
 func parseRequestHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
-	var p = Publish{WithReply: true}
+	var p = Publish{
+		WithReply: true,
+		Timeout:   publishDefaultTimeout,
+	}
 	err := p.UnmarshalCaddyfile(h.Dispenser)
 	return p, err
 }

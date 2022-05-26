@@ -24,5 +24,6 @@ route /api/users/*/edit {
   # nats request users.1.edit
   nats_request {nats.subject} {
     prefix "/api"
+    timeout 2000
   }
 }
