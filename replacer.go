@@ -8,13 +8,14 @@ import (
 	"github.com/caddyserver/caddy/v2"
 )
 
-func addNATSVarsToReplacer(repl *caddy.Replacer, req *http.Request, _ http.ResponseWriter) {
+func addNATSVarsToReplacer(repl *caddy.Replacer, req *http.Request, _ http.ResponseWriter, prefix string) {
 	natsVars := func(key string) (any, bool) {
 		if req != nil {
 			switch key {
 			// generated nats subject
 			case "nats.subject":
 				p := strings.Trim(req.URL.Path, "/")
+				p = strings.TrimLeft(p, strings.Trim(prefix, "/")+"/")
 				return strings.ReplaceAll(p, "/", "."), true
 			}
 
@@ -27,6 +28,7 @@ func addNATSVarsToReplacer(repl *caddy.Replacer, req *http.Request, _ http.Respo
 				}
 
 				p := strings.Trim(req.URL.Path, "/")
+				p = strings.TrimLeft(p, strings.Trim(prefix, "/")+"/")
 				parts := strings.Split(p, "/")
 
 				if idx < 0 {

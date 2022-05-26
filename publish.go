@@ -18,9 +18,9 @@ func init() {
 }
 
 type Publish struct {
-	//TODO use repl on subject to get placeholder support
 	Subject   string `json:"subject,omitempty"`
 	WithReply bool   `json:"with_reply,omitempty"`
+	Prefix    string `json:"prefix,omitempty"`
 
 	logger *zap.Logger
 	app    *App
@@ -46,23 +46,10 @@ func (p *Publish) Provision(ctx caddy.Context) error {
 	return nil
 }
 
-func (p *Publish) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
-	for d.Next() {
-		if !d.NextArg() {
-			return d.Errf("Not enough arguments", d.Val())
-		}
-		p.Subject = d.Val()
-		if d.NextArg() {
-			return d.Errf("Wrong argument count or unexpected line ending after '%s'", d.Val())
-		}
-	}
-
-	return nil
-}
-
 func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
 	repl := r.Context().Value(caddy.ReplacerCtxKey).(*caddy.Replacer)
-	addNATSVarsToReplacer(repl, r, w)
+	prefix := repl.ReplaceAll(p.Prefix, "")
+	addNATSVarsToReplacer(repl, r, w, prefix)
 
 	//TODO: What method is best here? ReplaceAll vs ReplaceWithErr?
 	subj := repl.ReplaceAll(p.Subject, "")
@@ -86,6 +73,32 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 	}
 
 	return next.ServeHTTP(w, r)
+}
+
+func (p *Publish) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+	for d.Next() {
+		if !d.Args(&p.Subject) {
+			return d.Errf("Wrong argument count or unexpected line ending after '%s'", d.Val())
+		}
+
+		for d.NextBlock(0) {
+			switch d.Val() {
+			case "prefix":
+				if p.Prefix != "" {
+					return d.Err("prefix already specified")
+				}
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+
+				p.Prefix = d.Val()
+			default:
+				return d.Errf("unrecognized subdirective: %s", d.Val())
+			}
+		}
+	}
+
+	return nil
 }
 
 func (p Publish) natsRequestReply(subject string, reqBody []byte, w http.ResponseWriter) error {

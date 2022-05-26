@@ -11,9 +11,18 @@ route /foo {
 }
 
 route /hello {
+  # nats request hello
   nats_request hello
 }
 
 route /bar/bat/baz {
+  # nats request bar.bat.baz
   nats_request {nats.subject}
+}
+
+route /api/users/*/edit {
+  # nats request users.1.edit
+  nats_request {nats.subject} {
+    prefix "/api"
+  }
 }
