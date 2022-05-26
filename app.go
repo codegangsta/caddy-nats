@@ -2,6 +2,8 @@ package caddynats
 
 import (
 	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/nats-io/jsm.go/natscontext"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 )
@@ -15,8 +17,9 @@ func init() {
 // NATS is a simple, secure and performant communications system for digital
 // systems, services and devices.
 type App struct {
-	conn *nats.Conn
+	Context string `json:"context,omitempty"`
 
+	conn   *nats.Conn
 	logger *zap.Logger
 	ctx    caddy.Context
 }
@@ -39,8 +42,8 @@ func (app *App) Provision(ctx caddy.Context) error {
 
 func (app *App) Start() error {
 	// Connect to the NATS server
-	//TODO Configure URL and options
-	conn, err := nats.Connect(nats.DefaultURL)
+	app.logger.Info("Connecting via NATS context", zap.String("context", app.Context))
+	conn, err := natscontext.Connect(app.Context)
 	if err != nil {
 		app.logger.Error(err.Error())
 	}
@@ -58,8 +61,18 @@ func (app *App) Stop() error {
 	return nil
 }
 
+func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+	for d.Next() {
+		// TODO add better error handling here
+		d.Args(&a.Context)
+	}
+
+	return nil
+}
+
 // Interface guards
 var (
-	_ caddy.App         = (*App)(nil)
-	_ caddy.Provisioner = (*App)(nil)
+	_ caddy.App             = (*App)(nil)
+	_ caddy.Provisioner     = (*App)(nil)
+	_ caddyfile.Unmarshaler = (*App)(nil)
 )

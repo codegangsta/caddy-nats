@@ -4,17 +4,11 @@
 
 ## Example Caddyfile directives
 ```sh
-# connect to nats default server
+# connect the currently selected nats context `nats context info`
 nats
 
-# Connect to nats server
-nats demo.nats.io 
-
-# connect to nats with custom options
-nats demo.nats.io {
-  user jeremy
-  password foobar
-}
+# Connect via a nats context `nats context select <context>`
+nats my_context
 
 # Publishing a nats message when a request is made (middleware, does not write a response)
 nats_publish [<matcher>] <subject>

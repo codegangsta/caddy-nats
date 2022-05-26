@@ -13,14 +13,15 @@ func init() {
 	httpcaddyfile.RegisterHandlerDirective("nats_request", parseRequestHandler)
 }
 
-func parseApp(_ *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
+func parseApp(d *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
 	app := new(App)
 
-	//TODO do parsing work here
+	err := app.UnmarshalCaddyfile(d)
+
 	return httpcaddyfile.App{
 		Name:  "nats",
 		Value: caddyconfig.JSON(app, nil),
-	}, nil
+	}, err
 }
 
 func parsePublishHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
