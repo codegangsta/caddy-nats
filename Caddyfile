@@ -13,3 +13,7 @@ route /foo {
 route /hello {
   nats_request hello
 }
+
+route /bar/bat/baz {
+  nats_request {nats.subject}
+}

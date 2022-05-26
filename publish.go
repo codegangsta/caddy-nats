@@ -38,7 +38,7 @@ func (p *Publish) Provision(ctx caddy.Context) error {
 
 	natsAppIface, err := ctx.App("nats")
 	if err != nil {
-		return fmt.Errorf("getting nats app: %v. Make sure nats is configured in global options", err)
+		return fmt.Errorf("getting NATS app: %v. Make sure NATS is configured in global options", err)
 	}
 
 	p.app = natsAppIface.(*App)
@@ -61,19 +61,26 @@ func (p *Publish) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 }
 
 func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
+	repl := r.Context().Value(caddy.ReplacerCtxKey).(*caddy.Replacer)
+	addNATSVarsToReplacer(repl, r, w)
+
+	//TODO: What method is best here? ReplaceAll vs ReplaceWithErr?
+	subj := repl.ReplaceAll(p.Subject, "")
+
 	//TODO: Check max msg size
-	//TODO: configurable bodies
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
 
+	p.logger.Debug("Publishing NATS message", zap.String("subject", subj), zap.Bool("with_reply", p.WithReply))
+
 	if p.WithReply {
-		return p.natsRequestReply(data, w)
+		return p.natsRequestReply(subj, data, w)
 	}
 
 	// Otherwise. just publish like normal
-	err = p.app.conn.Publish(p.Subject, data)
+	err = p.app.conn.Publish(subj, data)
 	if err != nil {
 		return err
 	}
@@ -81,9 +88,9 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 	return next.ServeHTTP(w, r)
 }
 
-func (p Publish) natsRequestReply(reqBody []byte, w http.ResponseWriter) error {
+func (p Publish) natsRequestReply(subject string, reqBody []byte, w http.ResponseWriter) error {
 	//TODO: Configurable timeout
-	m, err := p.app.conn.Request(p.Subject, reqBody, time.Second*10)
+	m, err := p.app.conn.Request(subject, reqBody, time.Second*10)
 	if err != nil {
 		return err
 	}

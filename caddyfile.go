@@ -17,7 +17,6 @@ func parseApp(_ *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
 	app := new(App)
 
 	//TODO do parsing work here
-
 	return httpcaddyfile.App{
 		Name:  "nats",
 		Value: caddyconfig.JSON(app, nil),
