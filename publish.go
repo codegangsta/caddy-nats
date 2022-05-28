@@ -63,7 +63,7 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 		return err
 	}
 
-	p.logger.Debug("Publishing NATS message", zap.String("subject", subj), zap.Bool("with_reply", p.WithReply), zap.Int64("timeout", p.Timeout))
+	p.logger.Debug("publishing NATS message", zap.String("subject", subj), zap.Bool("with_reply", p.WithReply), zap.Int64("timeout", p.Timeout))
 
 	if p.WithReply {
 		return p.natsRequestReply(subj, data, w)
@@ -79,7 +79,6 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 }
 
 func (p Publish) natsRequestReply(subject string, reqBody []byte, w http.ResponseWriter) error {
-	//TODO: Configurable timeout
 	m, err := p.app.conn.Request(subject, reqBody, time.Duration(p.Timeout)*time.Millisecond)
 	if err != nil {
 		return err
