@@ -15,7 +15,7 @@ import (
 type Subscribe struct {
 	Subject string `json:"subject,omitempty"`
 	Method  string `json:"method,omitempty"`
-	Path    string `json:"path,omitempty"`
+	URL     string `json:"path,omitempty"`
 
 	WithReply bool `json:"with_reply,omitempty"`
 
@@ -66,7 +66,7 @@ func (s *Subscribe) Unsubscribe(conn *nats.Conn) error {
 func (s *Subscribe) handler(msg *nats.Msg) {
 	s.logger.Debug("handling message NATS on subject", zap.String("subject", msg.Subject))
 
-	req, err := http.NewRequest(s.Method, s.Path, bytes.NewBuffer(msg.Data))
+	req, err := http.NewRequest(s.Method, s.URL, bytes.NewBuffer(msg.Data))
 	if err != nil {
 		s.logger.Error("error creating request", zap.Error(err))
 		return

@@ -46,8 +46,8 @@ func parseRequestHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, e
 
 func parseSubscribeHandler(d *caddyfile.Dispenser) (Subscribe, error) {
 	s := Subscribe{}
-	// TODO: Handle Errors Better
-	if !d.AllArgs(&s.Subject, &s.Method, &s.Path) {
+	// TODO: handle errors better here
+	if !d.AllArgs(&s.Subject, &s.Method, &s.URL) {
 		return s, d.Err("wrong number of arguments")
 	}
 
