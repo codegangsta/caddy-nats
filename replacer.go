@@ -16,7 +16,7 @@ func addNATSPublishVarsToReplacer(repl *caddy.Replacer, req *http.Request, _ htt
 			// generated nats subject
 			case "nats.subject":
 				p := strings.Trim(req.URL.Path, "/")
-				p = strings.TrimLeft(p, strings.Trim(prefix, "/")+"/")
+				p = strings.TrimPrefix(p, strings.Trim(prefix, "/")+"/")
 				return strings.ReplaceAll(p, "/", "."), true
 			}
 
@@ -29,7 +29,7 @@ func addNATSPublishVarsToReplacer(repl *caddy.Replacer, req *http.Request, _ htt
 				}
 
 				p := strings.Trim(req.URL.Path, "/")
-				p = strings.TrimLeft(p, strings.Trim(prefix, "/")+"/")
+				p = strings.TrimPrefix(p, strings.Trim(prefix, "/")+"/")
 				parts := strings.Split(p, "/")
 
 				if idx < 0 {
@@ -69,7 +69,7 @@ func addNatsSubscribeVarsToReplacer(repl *caddy.Replacer, msg *nats.Msg, prefix 
 					return "", false
 				}
 
-				p := strings.TrimLeft(msg.Subject, prefix+".")
+				p := strings.TrimPrefix(msg.Subject, prefix+".")
 				parts := strings.Split(p, ".")
 
 				if idx < 0 {
