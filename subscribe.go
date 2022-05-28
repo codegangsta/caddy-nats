@@ -2,7 +2,6 @@ package caddynats
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 
@@ -19,8 +18,8 @@ type Subscribe struct {
 	Path    string `json:"path,omitempty"`
 
 	sub     *nats.Subscription
+	ctx     caddy.Context
 	logger  *zap.Logger
-	app     *App
 	httpApp *caddyhttp.App
 }
 
@@ -30,54 +29,43 @@ func init() {
 
 func (Subscribe) CaddyModule() caddy.ModuleInfo {
 	return caddy.ModuleInfo{
-		ID:  "http.handlers.nats_subscribe",
+		ID:  "nats.handlers.subscribe",
 		New: func() caddy.Module { return new(Subscribe) },
 	}
 }
 
 func (s *Subscribe) Provision(ctx caddy.Context) error {
+	s.ctx = ctx
 	s.logger = ctx.Logger(s)
 
-	natsAppIface, err := ctx.App("nats")
-	if err != nil {
-		return fmt.Errorf("getting NATS app: %v. Make sure NATS is configured in global options", err)
-	}
-	s.app = natsAppIface.(*App)
+	return nil
+}
 
+func (s *Subscribe) Subscribe(conn *nats.Conn) error {
 	s.logger.Info("Subscribing to NATS subject", zap.String("subject", s.Subject))
-	sub, err := s.app.conn.Subscribe(s.Subject, s.handler)
+	httpAppIface, err := s.ctx.App("http")
+	if err != nil {
+		return err
+	}
+	s.httpApp = httpAppIface.(*caddyhttp.App)
+
+	sub, err := conn.Subscribe(s.Subject, s.handler)
 	s.sub = sub
 
 	return err
 }
 
-func (s Subscribe) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-	// Do nothing, since this is a subscriber
-	return next.ServeHTTP(w, r)
-}
+func (s *Subscribe) Unsubscribe(conn *nats.Conn) error {
+	s.logger.Info("Unsubscribing from NATS subject", zap.String("subject", s.Subject))
 
-func (s *Subscribe) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
-	for d.Next() {
-		// TODO better error handling
-		d.Args(&s.Subject, &s.Method, &s.Path)
-	}
-
-	return nil
+	return s.sub.Drain()
 }
 
 func (s *Subscribe) handler(msg *nats.Msg) {
-	s.logger.Info("Handling message on subject", zap.String("subject", msg.Subject))
-
-	// Look up the http app
-	httpAppIface, err := s.app.ctx.App("http")
-	if err != nil {
-		s.logger.Error("http app not loaded", zap.String("subject", msg.Subject))
-		return
-	}
-	httpApp := httpAppIface.(*caddyhttp.App)
+	s.logger.Debug("Handling message NATS on subject", zap.String("subject", msg.Subject))
 
 	// TODO: Support multiple servers, for now just pick the first one
-	server := httpApp.Servers["srv0"]
+	server := s.httpApp.Servers["srv0"]
 
 	req, err := http.NewRequest(s.Method, s.Path, bytes.NewBuffer(msg.Data))
 	if err != nil {
@@ -96,4 +84,5 @@ func (s *Subscribe) handler(msg *nats.Msg) {
 var (
 	_ caddy.Provisioner     = (*Subscribe)(nil)
 	_ caddyfile.Unmarshaler = (*Subscribe)(nil)
+	_ Handler               = (*Subscribe)(nil)
 )

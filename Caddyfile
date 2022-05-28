@@ -1,14 +1,16 @@
 {
-  nats
   debug
+
+  nats {
+    subscribe foo.bar GET https://localhost/foo/bar
+    #subscribe bat.baz POST https://localhost/bat/baz
+  }
 }
 
 localhost
 
 route /foo {
-  nats_publish foo.bar
   respond "All good!"
-  nats_subscribe foo.bar GET https://localhost/foo/bar
 }
 
 route /hello {
