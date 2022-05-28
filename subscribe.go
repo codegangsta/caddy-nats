@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 
 	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
@@ -82,7 +81,6 @@ func (s *Subscribe) handler(msg *nats.Msg) {
 }
 
 var (
-	_ caddy.Provisioner     = (*Subscribe)(nil)
-	_ caddyfile.Unmarshaler = (*Subscribe)(nil)
-	_ Handler               = (*Subscribe)(nil)
+	_ caddy.Provisioner = (*Subscribe)(nil)
+	_ Handler           = (*Subscribe)(nil)
 )

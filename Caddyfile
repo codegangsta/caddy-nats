@@ -3,7 +3,7 @@
 
   nats {
     subscribe foo.bar GET https://localhost/foo/bar
-    #subscribe bat.baz POST https://localhost/bat/baz
+    subscribe bat.baz POST https://localhost/foo
   }
 }
 

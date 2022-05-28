@@ -57,10 +57,9 @@ func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			switch d.Val() {
 			case "subscribe":
 				s := Subscribe{}
-				d.Prev()
-				err := s.UnmarshalCaddyfile(d)
-				if err != nil {
-					return err
+				// TODO: Handle Errors Better
+				if !d.AllArgs(&s.Subject, &s.Method, &s.Path) {
+					return d.Err("wrong number of arguments")
 				}
 				jsonHandler := caddyconfig.JSONModuleObject(s, "handler", s.CaddyModule().ID.Name(), nil)
 				a.HandlersRaw = append(a.HandlersRaw, jsonHandler)
@@ -104,15 +103,6 @@ func (p *Publish) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				return d.Errf("unrecognized subdirective: %s", d.Val())
 			}
 		}
-	}
-
-	return nil
-}
-
-func (s *Subscribe) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
-	for d.Next() {
-		// TODO better error handling
-		d.Args(&s.Subject, &s.Method, &s.Path)
 	}
 
 	return nil
