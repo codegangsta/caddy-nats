@@ -2,6 +2,7 @@ package caddynats
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 
@@ -43,7 +44,7 @@ func (s *Subscribe) Provision(ctx caddy.Context) error {
 }
 
 func (s *Subscribe) Subscribe(conn *nats.Conn) error {
-	s.logger.Info("Subscribing to NATS subject", zap.String("subject", s.Subject))
+	s.logger.Info("subscribing to NATS subject", zap.String("subject", s.Subject))
 	httpAppIface, err := s.ctx.App("http")
 	if err != nil {
 		return err
@@ -57,21 +58,25 @@ func (s *Subscribe) Subscribe(conn *nats.Conn) error {
 }
 
 func (s *Subscribe) Unsubscribe(conn *nats.Conn) error {
-	s.logger.Info("Unsubscribing from NATS subject", zap.String("subject", s.Subject))
+	s.logger.Info("unsubscribing from NATS subject", zap.String("subject", s.Subject))
 
 	return s.sub.Drain()
 }
 
 func (s *Subscribe) handler(msg *nats.Msg) {
-	s.logger.Debug("Handling message NATS on subject", zap.String("subject", msg.Subject))
+	s.logger.Debug("handling message NATS on subject", zap.String("subject", msg.Subject))
 
 	req, err := http.NewRequest(s.Method, s.Path, bytes.NewBuffer(msg.Data))
 	if err != nil {
-		// TODO: don't panic
-		panic(err)
+		s.logger.Error("error creating request", zap.Error(err))
+		return
 	}
 
-	server := s.matchServer(s.httpApp.Servers, req)
+	server, err := s.matchServer(s.httpApp.Servers, req)
+	if err != nil {
+		s.logger.Error("error matching server", zap.Error(err))
+		return
+	}
 
 	//TODO ack policy?
 	msg.Ack()
@@ -87,18 +92,18 @@ func (s *Subscribe) handler(msg *nats.Msg) {
 	server.ServeHTTP(noopResponseWriter{}, req)
 }
 
-func (s *Subscribe) matchServer(servers map[string]*caddyhttp.Server, req *http.Request) *caddyhttp.Server {
+func (s *Subscribe) matchServer(servers map[string]*caddyhttp.Server, req *http.Request) (*caddyhttp.Server, error) {
 	repl := caddy.NewReplacer()
 	for _, server := range servers {
 		r := caddyhttp.PrepareRequest(req, repl, nil, server)
 		for _, route := range server.Routes {
 			if route.MatcherSets.AnyMatch(r) {
-				return server
+				return server, nil
 			}
 		}
 	}
 
-	return nil
+	return nil, fmt.Errorf("no server matched for the current url: %s", req.URL)
 }
 
 var (
