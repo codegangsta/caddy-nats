@@ -3,6 +3,8 @@
     reply hello GET https://localhost/hello
 
     subscribe users.*.created GET https://localhost/{nats.path}
+
+    queue_reply jobs.* workers POST https://localhost/{nats.path}
   }
 
   debug

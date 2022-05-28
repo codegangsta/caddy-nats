@@ -19,8 +19,7 @@ type Subscribe struct {
 	Method     string `json:"method,omitempty"`
 	URL        string `json:"path,omitempty"`
 	QueueGroup string `json:"queue_group,omitempty"`
-
-	WithReply bool `json:"with_reply,omitempty"`
+	WithReply  bool   `json:"with_reply,omitempty"`
 
 	conn    *nats.Conn
 	sub     *nats.Subscription

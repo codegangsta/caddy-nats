@@ -54,6 +54,16 @@ func parseSubscribeHandler(d *caddyfile.Dispenser) (Subscribe, error) {
 	return s, nil
 }
 
+func parseQueueSubscribeHandler(d *caddyfile.Dispenser) (Subscribe, error) {
+	s := Subscribe{}
+	// TODO: handle errors better here
+	if !d.AllArgs(&s.Subject, &s.QueueGroup, &s.Method, &s.URL) {
+		return s, d.Err("wrong number of arguments")
+	}
+
+	return s, nil
+}
+
 func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	for d.Next() {
 		if d.NextArg() {
@@ -65,6 +75,7 @@ func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 		for nesting := d.Nesting(); d.NextBlock(nesting); {
 			switch d.Val() {
+
 			case "subscribe":
 				s, err := parseSubscribeHandler(d)
 				if err != nil {
@@ -72,6 +83,7 @@ func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				}
 				jsonHandler := caddyconfig.JSONModuleObject(s, "handler", s.CaddyModule().ID.Name(), nil)
 				a.HandlersRaw = append(a.HandlersRaw, jsonHandler)
+
 			case "reply":
 				s, err := parseSubscribeHandler(d)
 				s.WithReply = true
@@ -80,6 +92,24 @@ func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				}
 				jsonHandler := caddyconfig.JSONModuleObject(s, "handler", s.CaddyModule().ID.Name(), nil)
 				a.HandlersRaw = append(a.HandlersRaw, jsonHandler)
+
+			case "queue_subscribe":
+				s, err := parseQueueSubscribeHandler(d)
+				if err != nil {
+					return err
+				}
+				jsonHandler := caddyconfig.JSONModuleObject(s, "handler", s.CaddyModule().ID.Name(), nil)
+				a.HandlersRaw = append(a.HandlersRaw, jsonHandler)
+
+			case "queue_reply":
+				s, err := parseQueueSubscribeHandler(d)
+				s.WithReply = true
+				if err != nil {
+					return err
+				}
+				jsonHandler := caddyconfig.JSONModuleObject(s, "handler", s.CaddyModule().ID.Name(), nil)
+				a.HandlersRaw = append(a.HandlersRaw, jsonHandler)
+
 			default:
 				return d.Errf("unrecognized subdirective: %s", d.Val())
 			}
