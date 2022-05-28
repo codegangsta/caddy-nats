@@ -73,7 +73,7 @@ func (s *Subscribe) handler(msg *nats.Msg) {
 		panic(err)
 	}
 
-	// TODO: Only use this for replies, otherwise use a no-op recorder
+	// TODO: Only use this for replies, otherwise use a no-op writer
 	rec := httptest.NewRecorder()
 
 	server.ServeHTTP(rec, req)
