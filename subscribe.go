@@ -15,9 +15,10 @@ import (
 )
 
 type Subscribe struct {
-	Subject string `json:"subject,omitempty"`
-	Method  string `json:"method,omitempty"`
-	URL     string `json:"path,omitempty"`
+	Subject    string `json:"subject,omitempty"`
+	Method     string `json:"method,omitempty"`
+	URL        string `json:"path,omitempty"`
+	QueueGroup string `json:"queue_group,omitempty"`
 
 	WithReply bool `json:"with_reply,omitempty"`
 
@@ -47,7 +48,14 @@ func (s *Subscribe) Provision(ctx caddy.Context) error {
 }
 
 func (s *Subscribe) Subscribe(conn *nats.Conn) error {
-	s.logger.Info("subscribing to NATS subject", zap.String("subject", s.Subject))
+	s.logger.Info(
+		"subscribing to NATS subject",
+		zap.String("subject", s.Subject),
+		zap.String("queue_group", s.QueueGroup),
+		zap.String("method", s.Method),
+		zap.String("url", s.URL),
+		zap.Bool("with_reply", s.WithReply),
+	)
 
 	httpAppIface, err := s.ctx.App("http")
 	if err != nil {
@@ -56,14 +64,21 @@ func (s *Subscribe) Subscribe(conn *nats.Conn) error {
 	s.httpApp = httpAppIface.(*caddyhttp.App)
 	s.conn = conn
 
-	sub, err := conn.Subscribe(s.Subject, s.handler)
+	sub, err := conn.QueueSubscribe(s.Subject, s.QueueGroup, s.handler)
 	s.sub = sub
 
 	return err
 }
 
 func (s *Subscribe) Unsubscribe(conn *nats.Conn) error {
-	s.logger.Info("unsubscribing from NATS subject", zap.String("subject", s.Subject))
+	s.logger.Info(
+		"unsubscribing from NATS subject",
+		zap.String("subject", s.Subject),
+		zap.String("queue_group", s.QueueGroup),
+		zap.String("method", s.Method),
+		zap.String("url", s.URL),
+		zap.Bool("with_reply", s.WithReply),
+	)
 
 	return s.sub.Drain()
 }
@@ -78,6 +93,7 @@ func (s *Subscribe) handler(msg *nats.Msg) {
 	s.logger.Debug(
 		"handling message NATS on subject",
 		zap.String("subject", msg.Subject),
+		zap.String("queue_group", s.QueueGroup),
 		zap.String("method", method),
 		zap.String("url", url),
 		zap.Bool("with_reply", s.WithReply),
