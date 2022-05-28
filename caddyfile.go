@@ -11,6 +11,11 @@ func init() {
 	httpcaddyfile.RegisterGlobalOption("nats", parseApp)
 	httpcaddyfile.RegisterHandlerDirective("nats_publish", parsePublishHandler)
 	httpcaddyfile.RegisterHandlerDirective("nats_request", parseRequestHandler)
+
+	// TODO: This is a HACK, but I couldn't find any other way to have nats_subscribe
+	// and nats_reply happen in as a global directive without wrapping it in a route
+	// anyway.
+	httpcaddyfile.RegisterHandlerDirective("nats_subscribe", parseSubscribeHandler)
 }
 
 func parseApp(d *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
@@ -40,4 +45,11 @@ func parseRequestHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, e
 	}
 	err := p.UnmarshalCaddyfile(h.Dispenser)
 	return p, err
+}
+
+func parseSubscribeHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
+	var s = Subscribe{}
+
+	err := s.UnmarshalCaddyfile(h.Dispenser)
+	return s, err
 }

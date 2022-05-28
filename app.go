@@ -37,10 +37,7 @@ func (app *App) Provision(ctx caddy.Context) error {
 	// Set logger and Context
 	app.ctx = ctx
 	app.logger = ctx.Logger(app)
-	return nil
-}
 
-func (app *App) Start() error {
 	// Connect to the NATS server
 	app.logger.Info("Connecting via NATS context", zap.String("context", app.Context))
 	conn, err := natscontext.Connect(app.Context)
@@ -51,6 +48,11 @@ func (app *App) Start() error {
 	app.logger.Info("Connected to NATS server", zap.String("url", conn.ConnectedUrlRedacted()))
 	app.conn = conn
 
+	return nil
+}
+
+func (app *App) Start() error {
+	//TODO: Start the nats server here?
 	return nil
 }
 

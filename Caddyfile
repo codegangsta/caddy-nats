@@ -8,6 +8,7 @@ localhost
 route /foo {
   nats_publish foo.bar
   respond "All good!"
+  nats_subscribe foo.bar GET https://localhost/foo/bar
 }
 
 route /hello {
@@ -26,4 +27,9 @@ route /api/users/*/edit {
     prefix "/api"
     timeout 2000
   }
+}
+
+
+route /foo/bar {
+  respond "Nice!"
 }
