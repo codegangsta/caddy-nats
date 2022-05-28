@@ -62,13 +62,13 @@ func (app *App) Provision(ctx caddy.Context) error {
 
 func (app *App) Start() error {
 	// Connect to the NATS server
-	app.logger.Info("Connecting via NATS context", zap.String("context", app.Context))
+	app.logger.Info("connecting via NATS context", zap.String("context", app.Context))
 	conn, err := natscontext.Connect(app.Context)
 	if err != nil {
 		return err
 	}
 
-	app.logger.Info("Connected to NATS server", zap.String("url", conn.ConnectedUrlRedacted()))
+	app.logger.Info("connected to NATS server", zap.String("url", conn.ConnectedUrlRedacted()))
 	app.conn = conn
 
 	for _, handler := range app.Handlers {
@@ -83,7 +83,8 @@ func (app *App) Start() error {
 
 func (app *App) Stop() error {
 	defer app.conn.Close()
-	app.logger.Info("Closing NATS connection", zap.String("url", app.conn.ConnectedUrlRedacted()))
+
+	app.logger.Info("closing NATS connection", zap.String("url", app.conn.ConnectedUrlRedacted()))
 
 	for _, handler := range app.Handlers {
 		err := handler.Unsubscribe(app.conn)
