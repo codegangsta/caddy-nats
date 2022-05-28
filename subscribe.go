@@ -16,6 +16,8 @@ type Subscribe struct {
 	Method  string `json:"method,omitempty"`
 	Path    string `json:"path,omitempty"`
 
+	WithReply bool `json:"with_reply,omitempty"`
+
 	sub     *nats.Subscription
 	ctx     caddy.Context
 	logger  *zap.Logger
@@ -63,21 +65,40 @@ func (s *Subscribe) Unsubscribe(conn *nats.Conn) error {
 func (s *Subscribe) handler(msg *nats.Msg) {
 	s.logger.Debug("Handling message NATS on subject", zap.String("subject", msg.Subject))
 
-	// TODO: Support multiple servers, for now just pick the first one
-	server := s.httpApp.Servers["srv0"]
-
 	req, err := http.NewRequest(s.Method, s.Path, bytes.NewBuffer(msg.Data))
 	if err != nil {
 		// TODO: don't panic
 		panic(err)
 	}
 
-	// TODO: Only use this for replies, otherwise use a no-op writer
-	rec := httptest.NewRecorder()
+	server := s.matchServer(s.httpApp.Servers, req)
 
-	server.ServeHTTP(rec, req)
+	//TODO ack policy?
+	msg.Ack()
 
-	msg.Respond(rec.Body.Bytes())
+	if s.WithReply {
+		rec := httptest.NewRecorder()
+		server.ServeHTTP(rec, req)
+		//TODO Handle error
+		msg.Respond(rec.Body.Bytes())
+		return
+	}
+
+	server.ServeHTTP(noopResponseWriter{}, req)
+}
+
+func (s *Subscribe) matchServer(servers map[string]*caddyhttp.Server, req *http.Request) *caddyhttp.Server {
+	repl := caddy.NewReplacer()
+	for _, server := range servers {
+		r := caddyhttp.PrepareRequest(req, repl, nil, server)
+		for _, route := range server.Routes {
+			if route.MatcherSets.AnyMatch(r) {
+				return server
+			}
+		}
+	}
+
+	return nil
 }
 
 var (

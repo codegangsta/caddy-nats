@@ -1,37 +1,9 @@
 {
-  debug
-
   nats {
-    subscribe foo.bar GET https://localhost/foo/bar
-    subscribe bat.baz POST https://localhost/foo
+    reply hello GET https://localhost/hello
   }
 }
 
-localhost
-
-route /foo {
-  respond "All good!"
-}
-
-route /hello {
-  # nats request hello
-  nats_request hello
-}
-
-route /bar/bat/baz {
-  # nats request bar.bat.baz
-  nats_request {nats.subject}
-}
-
-route /api/users/*/edit {
-  # nats request users.1.edit
-  nats_request {nats.subject} {
-    prefix "/api"
-    timeout 2000
-  }
-}
-
-
-route /foo/bar {
-  respond "Nice!"
+localhost {
+  respond "Hello {path}"
 }

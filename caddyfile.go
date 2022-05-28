@@ -44,6 +44,16 @@ func parseRequestHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, e
 	return p, err
 }
 
+func parseSubscribeHandler(d *caddyfile.Dispenser) (Subscribe, error) {
+	s := Subscribe{}
+	// TODO: Handle Errors Better
+	if !d.AllArgs(&s.Subject, &s.Method, &s.Path) {
+		return s, d.Err("wrong number of arguments")
+	}
+
+	return s, nil
+}
+
 func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	for d.Next() {
 		if d.NextArg() {
@@ -56,10 +66,17 @@ func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 		for nesting := d.Nesting(); d.NextBlock(nesting); {
 			switch d.Val() {
 			case "subscribe":
-				s := Subscribe{}
-				// TODO: Handle Errors Better
-				if !d.AllArgs(&s.Subject, &s.Method, &s.Path) {
-					return d.Err("wrong number of arguments")
+				s, err := parseSubscribeHandler(d)
+				if err != nil {
+					return err
+				}
+				jsonHandler := caddyconfig.JSONModuleObject(s, "handler", s.CaddyModule().ID.Name(), nil)
+				a.HandlersRaw = append(a.HandlersRaw, jsonHandler)
+			case "reply":
+				s, err := parseSubscribeHandler(d)
+				s.WithReply = true
+				if err != nil {
+					return err
 				}
 				jsonHandler := caddyconfig.JSONModuleObject(s, "handler", s.CaddyModule().ID.Name(), nil)
 				a.HandlersRaw = append(a.HandlersRaw, jsonHandler)
