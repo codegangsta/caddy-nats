@@ -80,9 +80,6 @@ func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhtt
 
 func (p Publish) natsRequestReply(subject string, reqBody []byte, w http.ResponseWriter) error {
 	m, err := p.app.conn.Request(subject, reqBody, time.Duration(p.Timeout)*time.Millisecond)
-	if err != nil {
-		return err
-	}
 
 	// TODO: Make error handlers configurable
 	if err == nats.ErrNoResponders {
