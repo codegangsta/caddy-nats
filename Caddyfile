@@ -1,9 +1,14 @@
 {
   nats {
     reply hello GET https://localhost/hello
+
+    subscribe users.*.created GET https://localhost/{nats.path}
   }
+
+  debug
 }
 
 localhost {
+  log
   respond "Hello {path}"
 }
