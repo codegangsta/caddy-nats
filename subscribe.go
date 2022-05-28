@@ -78,9 +78,6 @@ func (s *Subscribe) handler(msg *nats.Msg) {
 		return
 	}
 
-	//TODO ack policy?
-	msg.Ack()
-
 	if s.WithReply {
 		rec := httptest.NewRecorder()
 		server.ServeHTTP(rec, req)
