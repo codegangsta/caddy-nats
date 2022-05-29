@@ -42,6 +42,8 @@ func TestAddNatsPublishVarsToReplacer(t *testing.T) {
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.2:}", want: "bat.baz"},
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.1:2}", want: "bar.bat"},
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:2}", want: "foo.bar.bat"},
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:3}", want: "foo.bar.bat.baz"},
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:5}", want: "foo.bar.bat.baz"},
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.:2}", want: "foo.bar.bat"},
 
 		// TODO Prefix?
