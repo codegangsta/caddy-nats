@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/caddyserver/caddy/v2"
+	"github.com/nats-io/nats.go"
 )
 
 // Returns a basic request for testing
@@ -49,6 +50,43 @@ func TestAddNatsPublishVarsToReplacer(t *testing.T) {
 	for _, tc := range tests {
 		repl := caddy.NewReplacer()
 		addNATSPublishVarsToReplacer(repl, tc.req, nil, "")
+		got := repl.ReplaceAll(tc.input, "")
+		if !reflect.DeepEqual(tc.want, got) {
+			t.Errorf("expected: %v, got: %v", tc.want, got)
+		}
+	}
+}
+
+func TestAddNatsSubscribeVarsToReplacer(t *testing.T) {
+	type test struct {
+		msg *nats.Msg
+
+		input string
+		want  string
+	}
+
+	tests := []test{
+		// Basic subject mapping
+		{msg: nats.NewMsg("foo.bar"), input: "{nats.path}", want: "foo/bar"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path}", want: "foo/bar/bat/baz"},
+		{msg: nats.NewMsg("foo.bar"), input: "prefix/{nats.path}/suffix", want: "prefix/foo/bar/suffix"},
+
+		// // Segment placeholders
+		{msg: nats.NewMsg("foo.bar"), input: "{nats.path.0}", want: "foo"},
+		{msg: nats.NewMsg("foo.bar"), input: "{nats.path.1}", want: "bar"},
+
+		// // Segment Ranges
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.0:}", want: "foo/bar/bat/baz"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.1:}", want: "bar/bat/baz"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.2:}", want: "bat/baz"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.1:2}", want: "bar/bat"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.0:2}", want: "foo/bar/bat"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.:2}", want: "foo/bar/bat"},
+	}
+
+	for _, tc := range tests {
+		repl := caddy.NewReplacer()
+		addNatsSubscribeVarsToReplacer(repl, tc.msg, "")
 		got := repl.ReplaceAll(tc.input, "")
 		if !reflect.DeepEqual(tc.want, got) {
 			t.Errorf("expected: %v, got: %v", tc.want, got)

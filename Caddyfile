@@ -1,16 +1,17 @@
 {
   nats {
-    reply hello GET https://localhost/hello
-
-    subscribe users.*.created GET https://localhost/{nats.path}
-
-    queue_reply jobs.* workers POST https://localhost/{nats.path}
+    # ex: github.GET.user.codegangsta
+    #            \_/ \______________/
+    #             |         |
+    #           path.1    path.2:
+    #
+    reply github.> {nats.path.1} https://localhost/{nats.path.2:}
   }
-
-  debug
 }
 
 localhost {
   log
-  respond "Hello {path}"
+  reverse_proxy https://api.github.com {
+    header_up Host {upstream_hostport}
+  }
 }
