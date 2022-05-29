@@ -45,13 +45,11 @@ func TestAddNatsPublishVarsToReplacer(t *testing.T) {
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:3}", want: "foo.bar.bat.baz"},
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:5}", want: "foo.bar.bat.baz"},
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.:2}", want: "foo.bar.bat"},
-
-		// TODO Prefix?
 	}
 
 	for _, tc := range tests {
 		repl := caddy.NewReplacer()
-		addNATSPublishVarsToReplacer(repl, tc.req, nil, "")
+		addNATSPublishVarsToReplacer(repl, tc.req)
 		got := repl.ReplaceAll(tc.input, "")
 		if !reflect.DeepEqual(tc.want, got) {
 			t.Errorf("expected: %v, got: %v", tc.want, got)
@@ -88,7 +86,7 @@ func TestAddNatsSubscribeVarsToReplacer(t *testing.T) {
 
 	for _, tc := range tests {
 		repl := caddy.NewReplacer()
-		addNatsSubscribeVarsToReplacer(repl, tc.msg, "")
+		addNatsSubscribeVarsToReplacer(repl, tc.msg)
 		got := repl.ReplaceAll(tc.input, "")
 		if !reflect.DeepEqual(tc.want, got) {
 			t.Errorf("expected: %v, got: %v", tc.want, got)

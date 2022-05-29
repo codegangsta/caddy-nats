@@ -127,15 +127,6 @@ func (p *Publish) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 		for d.NextBlock(0) {
 			switch d.Val() {
-			case "prefix":
-				if p.Prefix != "" {
-					return d.Err("prefix already specified")
-				}
-				if !d.NextArg() {
-					return d.ArgErr()
-				}
-
-				p.Prefix = d.Val()
 			case "timeout":
 				if !d.NextArg() {
 					return d.ArgErr()

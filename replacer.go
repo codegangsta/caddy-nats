@@ -10,14 +10,13 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func addNATSPublishVarsToReplacer(repl *caddy.Replacer, req *http.Request, _ http.ResponseWriter, prefix string) {
+func addNATSPublishVarsToReplacer(repl *caddy.Replacer, req *http.Request) {
 	natsVars := func(key string) (any, bool) {
 		if req != nil {
 			switch key {
 			// generated nats subject
 			case "nats.subject":
 				p := strings.Trim(req.URL.Path, "/")
-				p = strings.TrimPrefix(p, strings.Trim(prefix, "/")+"/")
 				return strings.ReplaceAll(p, "/", "."), true
 			}
 
@@ -39,14 +38,13 @@ func addNATSPublishVarsToReplacer(repl *caddy.Replacer, req *http.Request, _ htt
 	repl.Map(natsVars)
 }
 
-func addNatsSubscribeVarsToReplacer(repl *caddy.Replacer, msg *nats.Msg, prefix string) {
+func addNatsSubscribeVarsToReplacer(repl *caddy.Replacer, msg *nats.Msg) {
 	natsVars := func(key string) (any, bool) {
 		if msg != nil {
 			switch key {
 			// generated nats path
 			case "nats.path":
-				p := strings.TrimPrefix(msg.Subject, prefix+".")
-				return strings.ReplaceAll(p, ".", "/"), true
+				return strings.ReplaceAll(msg.Subject, ".", "/"), true
 			}
 
 			// subject parts

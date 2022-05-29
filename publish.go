@@ -22,7 +22,6 @@ func init() {
 type Publish struct {
 	Subject   string `json:"subject,omitempty"`
 	WithReply bool   `json:"with_reply,omitempty"`
-	Prefix    string `json:"prefix,omitempty"`
 	Timeout   int64  `json:"timeout,omitempty"`
 
 	logger *zap.Logger
@@ -51,8 +50,7 @@ func (p *Publish) Provision(ctx caddy.Context) error {
 
 func (p Publish) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
 	repl := r.Context().Value(caddy.ReplacerCtxKey).(*caddy.Replacer)
-	prefix := repl.ReplaceAll(p.Prefix, "")
-	addNATSPublishVarsToReplacer(repl, r, w, prefix)
+	addNATSPublishVarsToReplacer(repl, r)
 
 	//TODO: What method is best here? ReplaceAll vs ReplaceWithErr?
 	subj := repl.ReplaceAll(p.Subject, "")
