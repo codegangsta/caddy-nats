@@ -101,7 +101,6 @@ func subSlice(s []string, exp string) ([]string, error) {
 	} else {
 		return s[a : a+1], err
 	}
-
 }
 
 func minMax(i int, min int, max int) int {
