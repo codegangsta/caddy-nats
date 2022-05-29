@@ -145,6 +145,8 @@ func (s *Subscribe) prepareRequest(method string, rawURL string, body io.Reader)
 
 	req.RequestURI = u.Path
 	req.RemoteAddr = s.conn.ConnectedAddr()
+	//TODO: make User-Agent configurable
+	req.Header.Add("User-Agent", "caddy-nats")
 
 	return req, err
 }
