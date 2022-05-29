@@ -40,11 +40,14 @@ func TestAddNatsPublishVarsToReplacer(t *testing.T) {
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:}", want: "foo.bar.bat.baz"},
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.1:}", want: "bar.bat.baz"},
 		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.2:}", want: "bat.baz"},
-		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.1:2}", want: "bar.bat"},
-		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:2}", want: "foo.bar.bat"},
-		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:3}", want: "foo.bar.bat.baz"},
-		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:5}", want: "foo.bar.bat.baz"},
-		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.:2}", want: "foo.bar.bat"},
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.1:3}", want: "bar.bat"},
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:3}", want: "foo.bar.bat"},
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:4}", want: "foo.bar.bat.baz"},
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.:3}", want: "foo.bar.bat"},
+
+		// Out of bounds ranges
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.0:18}", want: ""},
+		{req: reqPath("/foo/bar/bat/baz"), input: "{nats.subject.-1:}", want: ""},
 	}
 
 	for _, tc := range tests {
@@ -79,9 +82,14 @@ func TestAddNatsSubscribeVarsToReplacer(t *testing.T) {
 		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.0:}", want: "foo/bar/bat/baz"},
 		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.1:}", want: "bar/bat/baz"},
 		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.2:}", want: "bat/baz"},
-		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.1:2}", want: "bar/bat"},
-		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.0:2}", want: "foo/bar/bat"},
-		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.:2}", want: "foo/bar/bat"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.1:3}", want: "bar/bat"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.0:3}", want: "foo/bar/bat"},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.:3}", want: "foo/bar/bat"},
+
+		// Out of bounds ranges
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.0:18}", want: ""},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.:18}", want: ""},
+		{msg: nats.NewMsg("foo.bar.bat.baz"), input: "{nats.path.-1:}", want: ""},
 	}
 
 	for _, tc := range tests {

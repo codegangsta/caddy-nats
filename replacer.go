@@ -25,9 +25,9 @@ func addNATSPublishVarsToReplacer(repl *caddy.Replacer, req *http.Request) {
 				idxStr := key[len(natsSubjectReplPrefix):]
 				p := strings.Trim(req.URL.Path, "/")
 				parts := strings.Split(p, "/")
-				s, err := subSlice(parts, idxStr)
+				s, ok := subSlice(parts, idxStr)
 
-				return strings.Join(s, "."), err == nil
+				return strings.Join(s, "."), ok
 			}
 
 		}
@@ -51,9 +51,9 @@ func addNatsSubscribeVarsToReplacer(repl *caddy.Replacer, msg *nats.Msg) {
 			if strings.HasPrefix(key, natsPathReplPrefix) {
 				idxStr := key[len(natsPathReplPrefix):]
 				parts := strings.Split(msg.Subject, ".")
-				s, err := subSlice(parts, idxStr)
+				s, ok := subSlice(parts, idxStr)
 
-				return strings.Join(s, "/"), err == nil
+				return strings.Join(s, "/"), ok
 			}
 
 		}
@@ -67,9 +67,10 @@ func addNatsSubscribeVarsToReplacer(repl *caddy.Replacer, msg *nats.Msg) {
 // subSlice returns a subslice of the given slice based off the string exp.
 // expressions can be in the format of ":" "n", "n:", ":n", or "n:n", with n
 // being a valid integer
-func subSlice(s []string, exp string) ([]string, error) {
+func subSlice(s []string, exp string) ([]string, bool) {
 	var a, b int
 	var err error
+
 	aStr, bStr, isRange := strings.Cut(exp, ":")
 
 	if aStr == "" {
@@ -77,7 +78,7 @@ func subSlice(s []string, exp string) ([]string, error) {
 	} else {
 		a, err = strconv.Atoi(aStr)
 		if err != nil {
-			return s, err
+			return s, false
 		}
 	}
 
@@ -86,18 +87,25 @@ func subSlice(s []string, exp string) ([]string, error) {
 	} else {
 		b, err = strconv.Atoi(bStr)
 		if err != nil {
-			return s, err
+			return s, false
 		}
 	}
 
-	// Add one to b for inclusivity
-	b = minMax(b+1, 0, len(s))
+	outOfBounds := func(i int) bool {
+		return i < 0 || i > len(s)+1
+	}
+
+	if outOfBounds(a) || outOfBounds(b) {
+		return s, false
+	}
+
+	b = minMax(b, 0, len(s))
 	a = minMax(a, 0, len(s))
 
 	if isRange {
-		return s[a:b], err
+		return s[a:b], true
 	} else {
-		return s[a : a+1], err
+		return s[a : a+1], true
 	}
 }
 
