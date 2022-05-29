@@ -1,0 +1,23 @@
+{
+  # Create the NATS connnection
+  # By default caddy-nats will connect to the currently selected nats context
+  nats {
+    # Respond to nats messages and proxy them to our caddy server through the localhost host
+    # the first segment is "github", followed by the http method, the rest of the subject
+    # is used as the path for the api.
+    #
+    # ex: github.GET.user.codegangsta
+    #            \_/ \______________/
+    #             |         |
+    #           path.1    path.2:
+    #
+    reply github.> {nats.path.1} https://localhost/{nats.path.2:}
+  }
+}
+
+localhost {
+  log
+  reverse_proxy https://api.github.com {
+    header_up Host {upstream_hostport}
+  }
+}
