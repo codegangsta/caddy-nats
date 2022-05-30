@@ -1,7 +1,7 @@
 # Caddy-NATS
 
 `caddy-nats` is a caddy module that allows the caddy server to interact with a
-[nats](https://nats.io/) server. This extension supports multiple patterns:
+[NATS](https://nats.io/) server. This extension supports multiple patterns:
 publish/subscribe, fan in/out, and request reply.
 
 The purpose of this project is to better bridge HTTP based services with NATS
