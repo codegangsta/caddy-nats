@@ -148,7 +148,7 @@ Respond to the `hello.world` NATS subject with the response of the `/hello/world
 
 #### Syntax
 ```Caddyfile
-  queue_subscribe <subject> <queue> <method> <url>
+queue_subscribe <subject> <queue> <method> <url>
 ```
 `queue_subscribe` operates the same way as `subscribe`, but subscribes under a NATS [queue group](https://docs.nats.io/nats-concepts/core-nats/queue)
 
@@ -170,7 +170,7 @@ Subscribe to a worker queue:
 
 #### Syntax
 ```Caddyfile
-queue_subscribe <subject> <queue> <method> <url>
+queue_reply <subject> <queue> <method> <url>
 ```
 
 `queue_reply` operates the same way as `reply`, but subscribes under a NATS [queue group](https://docs.nats.io/nats-concepts/core-nats/queue)
