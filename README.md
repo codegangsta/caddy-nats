@@ -29,7 +29,7 @@ nats-server
 
 Then create your Caddyfile:
 
-```Caddyfile
+```nginx
 {
   nats {
     reply hello GET https://localhost/hello
@@ -54,7 +54,7 @@ nats req hello ""
 
 To connect to `nats`, simply use the `nats` global option in your Caddyfile:
 
-```Caddyfile
+```nginx
 {
   nats
 }
@@ -72,7 +72,7 @@ nats context list
 
 We recommend connecting to a specific context:
 
-```Caddyfile
+```nginx
 {
   nats <context>
 }
@@ -95,7 +95,7 @@ All `subscribe` based directives (`subscribe`, `reply`, `queue_subscribe`, `queu
 ### subscribe
 
 #### Syntax
-```Caddyfile
+```nginx
 subscribe <subject> <method> <url>
 ```
 
@@ -108,7 +108,7 @@ generally fire and forget.
 
 Subscribe to an event stream in NATS and call an HTTP endpoint:
 
-```Caddyfile
+```nginx
 {
   nats {
     subscribe events.> POST https://localhost/nats_events/{nats.path.1:}
@@ -121,7 +121,7 @@ Subscribe to an event stream in NATS and call an HTTP endpoint:
 ### reply
 
 #### Syntax
-```Caddyfile
+```nginx
 reply <subject> <method> <url>
 ```
 
@@ -134,7 +134,7 @@ request.
 
 Respond to the `hello.world` NATS subject with the response of the `/hello/world` endpoint.
 
-```Caddyfile
+```nginx
 {
   nats {
     reply hello.world GET https://localhost/hello/world
@@ -147,7 +147,7 @@ Respond to the `hello.world` NATS subject with the response of the `/hello/world
 ### queue_subscribe
 
 #### Syntax
-```Caddyfile
+```nginx
 queue_subscribe <subject> <queue> <method> <url>
 ```
 `queue_subscribe` operates the same way as `subscribe`, but subscribes under a NATS [queue group](https://docs.nats.io/nats-concepts/core-nats/queue)
@@ -156,7 +156,7 @@ queue_subscribe <subject> <queue> <method> <url>
 
 Subscribe to a worker queue:
 
-```Caddyfile
+```nginx
 {
   nats {
     queue_subscribe jobs.* workers_queue POST https://localhost/{nats.path}
@@ -169,7 +169,7 @@ Subscribe to a worker queue:
 ### queue_reply
 
 #### Syntax
-```Caddyfile
+```nginx
 queue_reply <subject> <queue> <method> <url>
 ```
 
@@ -179,7 +179,7 @@ queue_reply <subject> <queue> <method> <url>
 
 Subscribe to a worker queue, and respond to the NATS message:
 
-```Caddyfile
+```nginx
 {
   nats {
     queue_reply jobs.* workers_queue POST https://localhost/{nats.path}
@@ -207,7 +207,7 @@ Additionally, since `publish` based directives are caddy http handlers, you also
 ### nats_publish
 
 #### Syntax
-```Caddyfile
+```nginx
 nats_publish [<matcher>] <subject> {
   timeout <timeout-ms>
 }
@@ -220,7 +220,7 @@ middleware (Think logging and events for specific http requests).
 
 Publish an event before responding to the http request:
 
-```Caddyfile
+```nginx
 localhost {
   route /hello {
     nats_publish events.hello
@@ -234,7 +234,7 @@ localhost {
 ### nats_request
 
 #### Syntax
-```Caddyfile
+```nginx
 nats_request [<matcher>] <subject> {
   timeout <timeout-ms>
 }
@@ -246,7 +246,7 @@ writes the response of the NATS reply to the http response body.
 
 Publish an event before responding to the http request:
 
-```Caddyfile
+```nginx
 localhost {
   route /hello/* {
     nats_request hello_service.{nats.subject.1}
