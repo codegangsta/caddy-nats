@@ -90,7 +90,6 @@ All `subscribe` based directives (`subscribe`, `reply`, `queue_subscribe`, `queu
 - `{nats.path}`: The subject of this message, with dots "." replaced with a slash "/" to make it easy to map to a URL.
 - `{nats.path.*}`: You can also select a segment of a path ex: `{nats.path.0}` or a subslice of a path: `{nats.path.2:}` or `{nats.path.2:7}` to have ultimate flexibility in what to forward onto the URL path.
 
-
 ### subscribe
 
 #### Syntax
@@ -100,7 +99,6 @@ All `subscribe` based directives (`subscribe`, `reply`, `queue_subscribe`, `queu
     subscribe <subject> <method> <url>
   }
 }
-
 ```
 
 `subscribe` will subscribe to the specific NATS subject (wildcards are
@@ -149,7 +147,6 @@ reply hello.world GET https://localhost/hello/world
     queue_subscribe <subject> <queue> <method> <url>
   }
 }
-
 ```
 `queue_subscribe` operates the same way as `subscribe`, but subscribes under a NATS [queue group](https://docs.nats.io/nats-concepts/core-nats/queue)
 
@@ -170,8 +167,8 @@ queue_subscribe jobs.* workers_queue POST https://localhost/{nats.path}
     queue_subscribe <subject> <queue> <method> <url>
   }
 }
-
 ```
+
 `queue_reply` operates the same way as `reply`, but subscribes under a NATS [queue group](https://docs.nats.io/nats-concepts/core-nats/queue)
 
 #### Example
@@ -181,7 +178,6 @@ Subscribe to a worker queue, and respond to the NATS message:
 ```Caddyfile
 queue_reply jobs.* workers_queue POST https://localhost/{nats.path}
 ```
-
 
 ## Publishing to a NATS subject
 
