@@ -1,5 +1,4 @@
 # Caddy-NATS
-> :warning: **This is still very much a work in progress**
 
 `caddy-nats` is a caddy module that allows the caddy server to interact with a
 [nats](https://nats.io/) server. This extension supports multiple patterns:
