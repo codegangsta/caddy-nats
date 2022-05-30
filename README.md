@@ -92,7 +92,7 @@ All `subscribe` based directives (`subscribe`, `reply`, `queue_subscribe`, `queu
 - `{nats.path.*}`: You can also select a segment of a path ex: `{nats.path.0}` or a subslice of a path: `{nats.path.2:}` or `{nats.path.2:7}` to have ultimate flexibility in what to forward onto the URL path.
 
 
-### `subscribe`
+### subscribe
 
 #### Syntax
 ```Caddyfile
@@ -117,7 +117,7 @@ Subscribe to an event stream in NATS and call an HTTP endpoint:
 subscribe events.> POST https://localhost/nats_events/{nats.path.1:}
 ```
 
-### `reply`
+### reply
 
 #### Syntax
 ```Caddyfile
@@ -141,7 +141,7 @@ Respond to the `hello.world` NATS subject with the response of the `/hello/world
 reply hello.world GET https://localhost/hello/world
 ```
 
-### `queue_subscribe`
+### queue_subscribe
 
 #### Syntax
 ```Caddyfile
@@ -162,7 +162,7 @@ Subscribe to a worker queue:
 queue_subscribe jobs.* workers_queue POST https://localhost/{nats.path}
 ```
 
-### `queue_reply`
+### queue_reply
 
 #### Syntax
 ```Caddyfile
@@ -199,7 +199,7 @@ All `publish` based directives (`publish`, `request`) support the following `cad
 
 Additionally, since `publish` based directives are caddy http handlers, you also get access to all [caddy http placeholders](https://caddyserver.com/docs/modules/http#docs).
 
-### `nats_publish`
+### nats_publish
 
 #### Syntax
 ```Caddyfile
@@ -224,7 +224,7 @@ localhost {
 }
 ```
 
-### `nats_request`
+### nats_request
 
 #### Syntax
 ```Caddyfile
