@@ -96,11 +96,7 @@ All `subscribe` based directives (`subscribe`, `reply`, `queue_subscribe`, `queu
 
 #### Syntax
 ```Caddyfile
-{
-  nats {
-    subscribe <subject> <method> <url>
-  }
-}
+subscribe <subject> <method> <url>
 ```
 
 `subscribe` will subscribe to the specific NATS subject (wildcards are
@@ -113,7 +109,11 @@ generally fire and forget.
 Subscribe to an event stream in NATS and call an HTTP endpoint:
 
 ```Caddyfile
-subscribe events.> POST https://localhost/nats_events/{nats.path.1:}
+{
+  nats {
+    subscribe events.> POST https://localhost/nats_events/{nats.path.1:}
+  }
+}
 ```
 
 ---
@@ -122,11 +122,7 @@ subscribe events.> POST https://localhost/nats_events/{nats.path.1:}
 
 #### Syntax
 ```Caddyfile
-{
-  nats {
-    reply <subject> <method> <url>
-  }
-}
+reply <subject> <method> <url>
 ```
 
 `reply` will subscribe to the specific NATS subject and forward the NATS
@@ -139,7 +135,11 @@ request.
 Respond to the `hello.world` NATS subject with the response of the `/hello/world` endpoint.
 
 ```Caddyfile
-reply hello.world GET https://localhost/hello/world
+{
+  nats {
+    reply hello.world GET https://localhost/hello/world
+  }
+}
 ```
 
 ---
@@ -148,11 +148,7 @@ reply hello.world GET https://localhost/hello/world
 
 #### Syntax
 ```Caddyfile
-{
-  nats {
-    queue_subscribe <subject> <queue> <method> <url>
-  }
-}
+  queue_subscribe <subject> <queue> <method> <url>
 ```
 `queue_subscribe` operates the same way as `subscribe`, but subscribes under a NATS [queue group](https://docs.nats.io/nats-concepts/core-nats/queue)
 
@@ -161,7 +157,11 @@ reply hello.world GET https://localhost/hello/world
 Subscribe to a worker queue:
 
 ```Caddyfile
-queue_subscribe jobs.* workers_queue POST https://localhost/{nats.path}
+{
+  nats {
+    queue_subscribe jobs.* workers_queue POST https://localhost/{nats.path}
+  }
+}
 ```
 
 ---
@@ -170,11 +170,7 @@ queue_subscribe jobs.* workers_queue POST https://localhost/{nats.path}
 
 #### Syntax
 ```Caddyfile
-{
-  nats {
-    queue_subscribe <subject> <queue> <method> <url>
-  }
-}
+queue_subscribe <subject> <queue> <method> <url>
 ```
 
 `queue_reply` operates the same way as `reply`, but subscribes under a NATS [queue group](https://docs.nats.io/nats-concepts/core-nats/queue)
@@ -184,7 +180,11 @@ queue_subscribe jobs.* workers_queue POST https://localhost/{nats.path}
 Subscribe to a worker queue, and respond to the NATS message:
 
 ```Caddyfile
-queue_reply jobs.* workers_queue POST https://localhost/{nats.path}
+{
+  nats {
+    queue_reply jobs.* workers_queue POST https://localhost/{nats.path}
+  }
+}
 ```
 
 ## Publishing to a NATS subject
