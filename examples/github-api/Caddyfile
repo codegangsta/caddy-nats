@@ -19,5 +19,6 @@ localhost {
   log
   reverse_proxy https://api.github.com {
     header_up Host {upstream_hostport}
+    header_up Authorization "Basic {env.GITHUB_AUTH_HEADER_TOKEN}"
   }
 }
