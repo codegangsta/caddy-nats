@@ -13,6 +13,7 @@ func init() {
 	httpcaddyfile.RegisterGlobalOption("nats", parseApp)
 	httpcaddyfile.RegisterHandlerDirective("nats_publish", parsePublishHandler)
 	httpcaddyfile.RegisterHandlerDirective("nats_request", parseRequestHandler)
+	httpcaddyfile.RegisterHandlerDirective("nats_kv", parseKvHandler)
 }
 
 func parseApp(d *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
@@ -40,6 +41,12 @@ func parseRequestHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, e
 		WithReply: true,
 		Timeout:   publishDefaultTimeout,
 	}
+	err := p.UnmarshalCaddyfile(h.Dispenser)
+	return p, err
+}
+
+func parseKvHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
+	var p = KV{}
 	err := p.UnmarshalCaddyfile(h.Dispenser)
 	return p, err
 }
@@ -113,6 +120,16 @@ func (a *App) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			default:
 				return d.Errf("unrecognized subdirective: %s", d.Val())
 			}
+		}
+	}
+
+	return nil
+}
+
+func (k *KV) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+	for d.Next() {
+		if !d.Args(&k.Action, &k.BucketName, &k.Key) {
+			return d.Errf("Wrong argument count or unexpected line ending after '%s'", d.Val())
 		}
 	}
 

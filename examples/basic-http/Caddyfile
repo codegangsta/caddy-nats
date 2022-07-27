@@ -1,0 +1,15 @@
+{
+  nats {
+    reply hello.world GET https://localhost/greet
+  }
+}
+
+localhost {
+  route /hello/* {
+    nats_request hello_service.{nats.subject.1}
+  }
+
+  route /greet {
+    nats_kv get my_bucket foo
+  }
+}

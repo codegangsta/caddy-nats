@@ -27,6 +27,7 @@ type App struct {
 	Handlers []Handler `json:"-"`
 
 	conn   *nats.Conn
+	js     nats.JetStreamContext
 	logger *zap.Logger
 	ctx    caddy.Context
 }
@@ -68,8 +69,11 @@ func (app *App) Start() error {
 		return err
 	}
 
+	js, _ := app.conn.JetStream()
+
 	app.logger.Info("connected to NATS server", zap.String("url", conn.ConnectedUrlRedacted()))
 	app.conn = conn
+	app.js = js
 
 	for _, handler := range app.Handlers {
 		err := handler.Subscribe(conn)

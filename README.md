@@ -257,6 +257,7 @@ localhost {
 ## What's Next?
 While this is currently functional and useful as is, here are the things I'd like to add next:
 
+- [ ] nats KV as an option in configuration
 - [ ] Add more examples in the /examples directory
 - [ ] Add Validation for all caddy modules in this package
 - [ ] Add godoc comments
