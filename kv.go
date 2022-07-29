@@ -54,7 +54,6 @@ func (k KV) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Han
 	// TODO: Figure out what we need to pass in here
 
 	if k.Action == "get" {
-		k.logger.Info("performing nats kv get", zap.String("bucket", k.BucketName), zap.String("key", k.Key))
 		return k.natsKVGet(k.Key, w)
 	}
 
@@ -63,11 +62,16 @@ func (k KV) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Han
 }
 
 func (k KV) natsKVGet(key string, w http.ResponseWriter) error {
-	bucket, err := k.app.js.KeyValue(k.BucketName)
+	k.logger.Info("Creating bucket instance", zap.String("bucket", k.BucketName), zap.String("key", k.Key))
+
+	// TODO: Provision this bucket instance in a more effecient way
+	js, _ := k.app.conn.JetStream() // don't need to check error as I'm not passing any options
+	bucket, err := js.KeyValue(k.BucketName)
 	if err != nil {
 		return err
 	}
 
+	k.logger.Info("Performing bucket get", zap.String("bucket", k.BucketName), zap.String("key", k.Key))
 	entry, err := bucket.Get(k.Key)
 	if err != nil {
 		return err
