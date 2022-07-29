@@ -65,8 +65,7 @@ func (k KV) natsKVGet(key string, w http.ResponseWriter) error {
 	k.logger.Info("Creating bucket instance", zap.String("bucket", k.BucketName), zap.String("key", k.Key))
 
 	// TODO: Provision this bucket instance in a more effecient way
-	js, _ := k.app.conn.JetStream() // don't need to check error as I'm not passing any options
-	bucket, err := js.KeyValue(k.BucketName)
+	bucket, err := k.app.js.KeyValue(k.BucketName)
 	if err != nil {
 		return err
 	}

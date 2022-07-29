@@ -69,6 +69,11 @@ func (app *App) Start() error {
 		return err
 	}
 
+	js, err := conn.JetStream()
+	if err != nil {
+		return err
+	}
+
 	app.logger.Info("connected to NATS server",
 		zap.String("url", conn.ConnectedUrlRedacted()),
 		zap.String("server_id", conn.ConnectedServerId()),
@@ -76,6 +81,7 @@ func (app *App) Start() error {
 		zap.String("server_version", conn.ConnectedServerVersion()),
 	)
 	app.conn = conn
+	app.js = js
 
 	for _, handler := range app.Handlers {
 		err := handler.Subscribe(conn)
